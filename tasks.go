@@ -3,8 +3,11 @@ package main
 
 //This file will be only compiled along the project with slurp. So don't put any projec code here.
 import (
+	"bytes"
+	"fmt"
 	"github.com/omeid/slurp"
 	"github.com/slurp-contrib/watch"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -34,15 +37,7 @@ func Slurp(b *slurp.Build) {
 
 	b.Task("proto-go", nil, func(c *slurp.C) error {
 		var protocArgs = []string{"--go_out=./tesla-go"}
-		filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-			if path != "." && info.IsDir() {
-				return filepath.SkipDir
-			}
-			if strings.HasSuffix(path, ".proto") {
-				protocArgs = append(protocArgs, path)
-			}
-			return nil
-		})
+		protocArgs = findProtoFiles(protocArgs)
 		cmd := exec.Command("protoc", protocArgs...)
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
@@ -54,7 +49,38 @@ func Slurp(b *slurp.Build) {
 		return nil
 	})
 	b.Task("proto-doc", nil, func(c *slurp.C) error {
-		//++
+		var protocArgs = []string{"--doc_out=markdown,/stdout:/dev"}
+		protocArgs = findProtoFiles(protocArgs)
+		cmd := exec.Command("protoc", protocArgs...)
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		buf := &bytes.Buffer{}
+		cmd.Stdout = buf
+		err := cmd.Run()
+		if err != nil {
+			return err
+		}
+
+		mdFile, err := os.Create("../docs.openra.zone/content/tech/tesla-messages.md")
+		if err != nil {
+			return fmt.Errorf("error rewriting tesla-messages.md: %v", err)
+		}
+		defer mdFile.Close()
+		io.WriteString(mdFile, `---
+date: 2013-07-01
+linktitle: Tesla messages
+menu:
+  main:
+    parent: tech
+title: Tesla messages
+description: Message specifications for the Tesla protocol
+weight: 81
+---
+
+`)
+		io.Copy(mdFile, buf)
+		mdFile.Sync()
+		mdFile.Close()
 		return nil
 	})
 
@@ -75,4 +101,17 @@ func Slurp(b *slurp.Build) {
 	b.Task("default", []string{"proto-all"}, func(c *slurp.C) error {
 		return nil
 	})
+}
+
+func findProtoFiles(list []string) []string {
+	filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+		if path != "." && info.IsDir() {
+			return filepath.SkipDir
+		}
+		if strings.HasSuffix(path, ".proto") {
+			list = append(list, path)
+		}
+		return nil
+	})
+	return list
 }
