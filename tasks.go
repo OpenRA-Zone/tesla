@@ -72,6 +72,7 @@ linktitle: Tesla messages
 menu:
   main:
     parent: tech
+notoc: notoc
 title: Tesla messages
 description: Message specifications for the Tesla protocol
 weight: 81
