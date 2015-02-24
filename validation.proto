@@ -1,0 +1,16 @@
+package tesla;
+
+// PlayerJoinRequest is sent by the DS to the CS when a player wants to join the DS.
+// The CS verifies the JoinHash sent by the PC to the DS and responds with a PlayerJoinResponse.
+message PlayerJoinRequest {
+	required uint64 RequestID = 1;
+	required uint64 PlayerID = 2;
+	required bytes AuthenticationHash = 3;
+}
+
+// PlayerJoinResponse is sent from the CS to the DS. The field `Valid` indicates wether the JoinRequest was valid.
+message PlayerJoinResponse {
+	required uint64 RequestID = 1;
+	required bool Valid = 2;
+	//++ other fields indicating stuff such as "banned" or "bad reputation", 
+}

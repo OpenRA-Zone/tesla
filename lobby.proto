@@ -1,0 +1,24 @@
+package tesla;
+
+message LobbyPlayerJoin {
+	required uint64 PlayerID = 1;
+	required int64 EventTime = 2;
+}
+
+message LobbyPlayerLeave {
+	required uint64 PlayerID = 1;
+	required int64 EventTime = 2;
+}
+
+// Lobby chat is handled by the dedicated server. A 
+message LobbyChatMessage {
+	enum MessageTarget {
+		All = 1;
+		Team = 2;
+	}
+
+	required uint64 PlayerID = 1;
+	required int64 EventTime = 2;
+	required string Text = 3;
+	required MessageTarget Target = 4;
+}

@@ -1,0 +1,13 @@
+package tesla;
+
+message EventGameStart {
+	required uint64 GameID = 1; // GameID 
+	required int64 StartTime = 2; // Unix timestamp (seconds sinds epoch in UTC timezone)
+
+}
+
+message EventGameEnd {
+	required uint64 GameID = 1;
+	required int64 EndTime = 2; // Unix timestamp (seconds sinds epoch in UTC timezone)
+	//++ end game stats
+}

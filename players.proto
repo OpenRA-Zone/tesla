@@ -1,0 +1,23 @@
+package tesla;
+
+enum PlayerAuthenticationLevel {
+	None = 0;
+	Anonymous = 1;
+	Member = 2;
+	ProMember = 3;
+
+
+	Mod = 21;
+	Admin = 42;
+}
+
+message PlayerReference {
+	required uint64 ID = 1;
+	required string DisplayName = 2;
+}
+
+message PlayerInfo {
+	required uint64 ID = 1;
+	required string DisplayName = 2;
+	//++ more data
+}
