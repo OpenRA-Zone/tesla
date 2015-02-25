@@ -45,7 +45,28 @@ func Slurp(b *slurp.Build) {
 		return cmd.Run()
 	})
 	b.Task("proto-csharp", nil, func(c *slurp.C) error {
-		//++
+		wd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("error getting working dir: %v", err)
+		}
+
+		// inherit host environment, but suppress wine whining
+		environment := os.Environ()
+		environment = append(environment, "WINEDEBUG=-all")
+
+		protoFiles := findProtoFiles(nil)
+		for _, protoFile := range protoFiles {
+			cmd := exec.Command("wine", "/opt/ProtoBuf-2014-08-23-bin/CodeGenerator.exe", "--use-tabs", protoFile, fmt.Sprintf(`--output=tesla-csharp/%s.cs`, strings.TrimSuffix(protoFile, ".proto")))
+			cmd.Dir = wd
+			cmd.Env = environment
+			cmd.Stderr = os.Stderr
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			err := cmd.Run()
+			if err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 	b.Task("proto-doc", nil, func(c *slurp.C) error {
@@ -105,6 +126,9 @@ weight: 81
 }
 
 func findProtoFiles(list []string) []string {
+	if list == nil {
+		list = []string{}
+	}
 	filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if path != "." && info.IsDir() {
 			return filepath.SkipDir
